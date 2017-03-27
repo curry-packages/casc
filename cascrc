@@ -1,0 +1,42 @@
+-- Config file for StyleChecker.
+-- Copy this file as .cascrc in your home directory or the directory
+-- from where you call casc
+--
+-- Every line starting with '--' is a comment and will be ignored.
+-- The config file contains:
+--   * a list of all available checks
+--   * an integer for maximum line length
+--   * a parameter for the activation of autocorrect
+
+-- You can tell the StyleChecker your desired options by using the numbers 0-2.
+--  0:  Don't check this.
+--  1:  Check this and show warning messages for violations.
+--  2:  Check this and try to correct it automatically.
+--     (Available for Expression.IfThenElseKW and Expression.Let.)
+
+Data.Bars                    = 1
+Data.Components              = 1
+Data.Constructors            = 1
+Export.List                  = 1
+Expression.Case              = 1
+Expression.IfThenElseKW      = 2
+Expression.IfThenElseSubExpr = 1
+Expression.Let               = 2
+Import.Explicit              = 1
+LineLength                   = 1
+Record.Commas                = 1
+Record.DoubleColons          = 1
+Record.FieldNames            = 1
+Record.Types                 = 1
+Rhs.Bars                     = 1
+Rhs.Eq                       = 1
+Type.Arrow                   = 1
+
+-- Parameter for LineLength-Check
+-- How long do you want to allow your lines of code to be?
+maxLength = 80
+
+-- Shall casc try to correct your source file if there are
+-- style errors from checks that are marked with "2"?
+-- Write "yes" or "y" if you want this feature.
+autoCorrect = no

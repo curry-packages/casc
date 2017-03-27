@@ -1,0 +1,18 @@
+{
+    "name": "casc",
+    "version": "0.0.1",
+    "author": "Katharina Rahf, Michael Hanus <mh@informatik.uni-kiel.de>",
+    "maintainer": "Michael Hanus <mh@informatik.uni-kiel.de>",
+    "synopsis": "A tool to check the formatting style of Curry programs",
+    "category": [ "Analysis" ],
+    "dependencies": {
+    },
+    "executable": {
+        "name": "curry-style",
+        "main": "CASC"
+    },
+    "source": {
+        "git": "https://git.ps.informatik.uni-kiel.de/curry-packages/casc.git",
+        "tag": "$version"
+    }
+}
