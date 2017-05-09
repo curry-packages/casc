@@ -101,26 +101,28 @@ infPos i = case i of
 -- |Get start position of ConstrDecl
 constrDeclPos :: ConstrDecl -> Pos
 constrDeclPos c = case c of
-  ConstrDecl _ i  _       -> idPos i
-  ConOpDecl  _ te _ _     -> typeExprPos te
-  RecordDecl _ i  _ _ _ _ -> idPos i
+  ConstrDecl s _ _ _ _ i _        -> maybe (idPos i) start s
+  ConOpDecl  s _ _ _ _ te _ _     -> maybe (typeExprPos te) start s
+  RecordDecl s _ _ _ _ i  _ _ _ _ -> maybe (idPos i) start s
 
 -- |Get Type positions of ConstrDecl
 constrDeclConstrTypePos :: ConstrDecl -> [Pos]
 constrDeclConstrTypePos cd = case cd of
-  ConstrDecl _ _ cts       -> if null cts
-                                then [virtualPos]
-                                else map typeExprPos cts
-  RecordDecl _ _ _ fds _ _ -> if null fds
-                                then [virtualPos]
-                                else map fieldDeclTEPos fds
-  _                        -> [virtualPos]
+  ConstrDecl _ _ _ _ _ _ cts       -> if null cts
+                                        then [virtualPos]
+                                        else map typeExprPos cts
+  RecordDecl _ _ _ _ _ _ _ fds _ _ -> if null fds
+                                        then [virtualPos]
+                                        else map fieldDeclTEPos fds
+  _                                -> [virtualPos]
 
 -- |Get position of first Type in ConstrDecl
 firstCDConstrTypePos :: ConstrDecl -> Pos
 firstCDConstrTypePos cd = case cd of
-  ConstrDecl _ _ cts -> if null cts then virtualPos else typeExprPos $ head cts
-  _                  -> virtualPos
+  ConstrDecl _ _ _ _ _ _  cts -> if null cts
+                                   then virtualPos
+                                   else typeExprPos $ head cts
+  _                           -> virtualPos
 
 -- |Get position of commas in FieldDecl
 fieldDeclCPos :: FieldDecl -> [Pos]
@@ -141,9 +143,8 @@ fieldDeclTEPos (FieldDecl _ _ _ te) = typeExprPos te
 -- |Get start position of TypeExpr
 typeExprPos :: TypeExpr -> Pos
 typeExprPos te = case te of
-  ConstructorType msp qi _ _ -> case msp of
-                                    Just sp -> start sp
-                                    Nothing -> qidPos qi
+  ConstructorType qi         -> qidPos qi
+  ApplyType       te1 _      -> typeExprPos te1
   VariableType    i          -> idPos i
   TupleType       sp   _ _ _ -> start sp
   ListType        sp   _ _   -> start sp
@@ -179,7 +180,7 @@ litPos l = case l of
 patPos :: Pattern -> Pos
 patPos p = case p of
   LiteralPattern     l             -> litPos l
-  NegativePattern    i   _         -> idPos  i
+  NegativePattern    sp _          -> start sp
   VariablePattern    i             -> idPos  i
   ConstructorPattern qi  _         -> qidPos qi
   InfixPattern       pat _   _     -> patPos pat
@@ -209,7 +210,7 @@ exprPos e = case e of
   EnumFromThen   spl _ _ _ _ _   -> start spl
   EnumFromTo     spl _ _ _ _     -> start spl
   EnumFromThenTo spl _ _ _ _ _ _ -> start spl
-  UnaryMinus     i  _            -> idPos    i
+  UnaryMinus     sp _            -> start sp
   Apply          e1 _            -> exprPos  e1
   InfixApply     e1 _ _          -> exprPos  e1
   LeftSection    spl _ _ _       -> start spl
@@ -230,66 +231,3 @@ stmtPos s = case s of
 -- |Get position of rightarrow in Alt
 altPos :: Alt -> Pos
 altPos (Alt _ rhs) = rhsPos rhs
-
--- span computation
-
--- TODO: Remove when curry-frontend was extended correspondingly
-
--- | Compute for a given token and its starting position a corresponding span
-spanToken :: (Pos,Token) -> (Span,Token)
-spanToken posTok = case posTok of
-  (p,   CharTok c) -> ((p, moveColBy p (length (show c) - 1)), CharTok c)
-  (p,    IntTok i) -> ((p, moveColBy p (length (show i) - 1)), IntTok i)
-  (p,  FloatTok f) -> ((p, moveColBy p (length (show f) - 1)), FloatTok f)
-  (p, StringTok s) -> ((p, moveColBy p (length (show s) - 1)), StringTok s)
-
-  (p,        Id i) -> ((p, moveColBy p (length i - 1)), Id i)
-  (p,      QId qi) -> ((p, moveColBy p (length qi - 1)), QId qi)
-  (p,       Sym s) -> ((p, moveColBy p (length s - 1)), Sym s)
-  (p,     QSym qs) -> ((p, moveColBy p (length qs - 1)), QSym qs)
-
-  (p,     KW_case) -> ((p, moveColBy p 3), KW_case)
-  (p,     KW_data) -> ((p, moveColBy p 3), KW_data)
-  (p,       KW_do) -> ((p, moveColBy p 1), KW_do)
-  (p,     KW_else) -> ((p, moveColBy p 3), KW_else)
-  (p, KW_external) -> ((p, moveColBy p 7), KW_external)
-  (p,    KW_fcase) -> ((p, moveColBy p 4), KW_fcase)
-  (p,  KW_foreign) -> ((p, moveColBy p 6), KW_foreign)
-  (p,     KW_free) -> ((p, moveColBy p 3), KW_free)
-  (p,       KW_if) -> ((p, moveColBy p 1), KW_if)
-  (p,   KW_import) -> ((p, moveColBy p 5), KW_import)
-  (p,       KW_in) -> ((p, moveColBy p 1), KW_in)
-  (p,    KW_infix) -> ((p, moveColBy p 4), KW_infix)
-  (p,   KW_infixl) -> ((p, moveColBy p 5), KW_infixl)
-  (p,   KW_infixr) -> ((p, moveColBy p 5), KW_infixr)
-  (p,      KW_let) -> ((p, moveColBy p 2), KW_let)
-  (p,   KW_module) -> ((p, moveColBy p 5), KW_module)
-  (p,  KW_newtype) -> ((p, moveColBy p 6), KW_newtype)
-  (p,       KW_of) -> ((p, moveColBy p 1), KW_of)
-  (p,     KW_then) -> ((p, moveColBy p 3), KW_then)
-  (p,     KW_type) -> ((p, moveColBy p 3), KW_type)
-  (p,    KW_where) -> ((p, moveColBy p 4), KW_where)
-
-  (p,      DotDot) -> ((p, moveColBy p 1), DotDot)
-  (p, DoubleColon) -> ((p, moveColBy p 1), DoubleColon)
-  (p,   LeftArrow) -> ((p, moveColBy p 1), LeftArrow)
-  (p,  RightArrow) -> ((p, moveColBy p 1), RightArrow)
-  (p,        Bind) -> ((p, moveColBy p 1), Bind)
-  (p,      Select) -> ((p, moveColBy p 1), Select)
-
-  (p,        Id_as) -> ((p, moveColBy p 1), Id_as)
-  (p,     Id_ccall) -> ((p, moveColBy p 4), Id_ccall)
-  (p,    Id_forall) -> ((p, moveColBy p 5), Id_forall)
-  (p,    Id_hiding) -> ((p, moveColBy p 5), Id_hiding)
-  (p, Id_interface) -> ((p, moveColBy p 8), Id_interface)
-  (p, Id_primitive) -> ((p, moveColBy p 8), Id_primitive)
-  (p, Id_qualified) -> ((p, moveColBy p 8), Id_qualified)
-
-  (p, SymMinusDot) -> ((p, moveColBy p 1), SymMinusDot)
-
-  (p, PragmaLanguage    ) -> ((p, moveColBy p 11), PragmaLanguage)
-  (p, PragmaOptions ms s) -> ((p, moveColBy p (length s + 11)), PragmaOptions ms s)
-  (p, PragmaHiding      ) -> ((p, moveColBy p 9), PragmaHiding)
-  (p, PragmaEnd         ) -> ((p, moveColBy p 2), PragmaEnd)
-
-  (p,             tok) -> ((p, p), tok)

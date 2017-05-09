@@ -24,7 +24,7 @@ import Utils             (condMsg)
 -- |Check ConstrDecl
 constrDeclCheck :: CheckF ConstrDecl
 constrDeclCheck cd = case cd of
-  RecordDecl _ _ sl fds ss sr -> commas ++ constr ++ doublecolons ++ types
+  RecordDecl _ _ _ _ _ _ sl fds ss sr -> commas ++ constr ++ doublecolons ++ types
     where
       pl = start sl
       ps = map start ss

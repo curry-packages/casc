@@ -86,14 +86,14 @@ rsDecl d = case d of
   SpanAST.InfixDecl i mp ipos _
     -> AST.InfixDecl (infPos i) (rsInfix i)
                      (rsPrecedence mp) (map rsSymIdent ipos)
-  SpanAST.DataDecl sp i is _ cds _
-    -> AST.DataDecl (start sp) (rsIdent i) (map rsIdent is) (map rsConstrDecl cds)
-  SpanAST.NewtypeDecl sp i is _ ncd
-    -> AST.NewtypeDecl (start sp) (rsIdent i) (map rsIdent is) (rsNewConstrDecl ncd)
+  SpanAST.DataDecl sp i is _ cds _ _ _ clss _ _
+    -> AST.DataDecl (start sp) (rsIdent i) (map rsIdent is) (map rsConstrDecl cds) (map rsQualIdent clss)
+  SpanAST.NewtypeDecl sp i is _ ncd _ _ clss _ _
+    -> AST.NewtypeDecl (start sp) (rsIdent i) (map rsIdent is) (rsNewConstrDecl ncd) (map rsQualIdent clss)
   SpanAST.TypeDecl sp i is _ te
     -> AST.TypeDecl (start sp) (rsIdent i) (map rsIdent is) (rsTypeExpr te)
-  SpanAST.TypeSig sis _ _ te
-    -> AST.TypeSig (sidPos $ head sis) (map rsSymIdent sis) (rsTypeExpr te)
+  SpanAST.TypeSig sis _ _ qte
+    -> AST.TypeSig (sidPos $ head sis) (map rsSymIdent sis) (rsQualTypeExpr qte)
   SpanAST.FunctionDecl i eqs
     -> AST.FunctionDecl (idPos i) (rsIdent i) (map rsEquation eqs)
   SpanAST.ForeignDecl sp cc mps i _ te
@@ -107,6 +107,12 @@ rsDecl d = case d of
     -> AST.PatternDecl (patPos p) (rsPattern p) (rsRhs rhs)
   SpanAST.FreeDecl is _  _
     -> AST.FreeDecl (idPos $ head is) (map rsIdent is)
+  SpanAST.DefaultDecl sp _ tes _ _
+    -> AST.DefaultDecl (start sp) (map rsTypeExpr tes)
+  SpanAST.ClassDecl sp cx _ cls tv _ ds
+    -> AST.ClassDecl (start sp) (rsContext cx) (rsIdent cls) (rsIdent tv) (map rsDecl ds)
+  SpanAST.InstanceDecl sp cx _ qcls inst _ ds
+    -> AST.InstanceDecl (start sp) (rsContext cx) (rsQualIdent qcls) (rsInstanceType inst) (map rsDecl ds)
 
 -- |Remove span information from Infix
 rsInfix :: SpanAST.Infix -> AST.Infix
@@ -124,20 +130,20 @@ rsPrecedence p = case p of
 -- |Remove span information from ConstrDecl
 rsConstrDecl :: SpanAST.ConstrDecl -> AST.ConstrDecl
 rsConstrDecl cd = case cd of
-  SpanAST.ConstrDecl is i tes
-    -> AST.ConstrDecl (idPos i) (map rsIdent is) (rsIdent i) (map rsTypeExpr tes)
-  SpanAST.ConOpDecl is te1 i te2
-    -> AST.ConOpDecl  (idPos i) (map rsIdent is) (rsTypeExpr te1) (rsIdent i) (rsTypeExpr te2)
-  SpanAST.RecordDecl is i _ fds _ _
-    -> AST.RecordDecl (idPos i) (map rsIdent is) (rsIdent i) (map rsFieldDecl fds)
+  SpanAST.ConstrDecl _ is _ cx _ i tes
+    -> AST.ConstrDecl (idPos i) (map rsIdent is) (rsContext cx) (rsIdent i) (map rsTypeExpr tes)
+  SpanAST.ConOpDecl _ is _ cx _ te1 i te2
+    -> AST.ConOpDecl  (idPos i) (map rsIdent is) (rsContext cx) (rsTypeExpr te1) (rsIdent i) (rsTypeExpr te2)
+  SpanAST.RecordDecl _ is _ cx _ i _ fds _ _
+    -> AST.RecordDecl (idPos i) (map rsIdent is) (rsContext cx) (rsIdent i) (map rsFieldDecl fds)
 
 -- |Remove span information from NewConstrDecl
 rsNewConstrDecl :: SpanAST.NewConstrDecl -> AST.NewConstrDecl
 rsNewConstrDecl ncd = case ncd of
-  SpanAST.NewConstrDecl is i te
-    -> AST.NewConstrDecl (idPos i) (map rsIdent is) (rsIdent i) (rsTypeExpr te)
-  SpanAST.NewRecordDecl is i1 _ (i2, _, te) _
-    -> AST.NewRecordDecl (idPos i1) (map rsIdent is) (rsIdent i1) (rsIdent i2, rsTypeExpr te)
+  SpanAST.NewConstrDecl i te
+    -> AST.NewConstrDecl (idPos i) (rsIdent i) (rsTypeExpr te)
+  SpanAST.NewRecordDecl i1 _ (i2, _, te) _
+    -> AST.NewRecordDecl (idPos i1) (rsIdent i1) (rsIdent i2, rsTypeExpr te)
 
 -- |Remove span information from FieldDecl
 rsFieldDecl :: SpanAST.FieldDecl -> AST.FieldDecl
@@ -153,8 +159,10 @@ rsCallConv cc = case cc of
 -- |Remove span information from TypeExpr
 rsTypeExpr :: SpanAST.TypeExpr -> AST.TypeExpr
 rsTypeExpr te = case te of
-  SpanAST.ConstructorType _ qi tes _
-    -> AST.ConstructorType (rsQualIdent qi) (map rsTypeExpr tes)
+  SpanAST.ConstructorType qi
+    -> AST.ConstructorType (rsQualIdent qi)
+  SpanAST.ApplyType te1 te2
+    -> AST.ApplyType (rsTypeExpr te1) (rsTypeExpr te2)
   SpanAST.VariableType i
     -> AST.VariableType (rsIdent i)
   SpanAST.TupleType _ tes _ _
@@ -165,6 +173,21 @@ rsTypeExpr te = case te of
     -> AST.ArrowType (rsTypeExpr te1) (rsTypeExpr te2)
   SpanAST.ParenType _ te1 _
     -> AST.ParenType (rsTypeExpr te1)
+
+-- |Remove span information from QualTypeExpr
+rsQualTypeExpr :: SpanAST.QualTypeExpr -> AST.QualTypeExpr
+rsQualTypeExpr (SpanAST.QualTypeExpr cx _ te) =
+  AST.QualTypeExpr (rsContext cx) (rsTypeExpr te)
+
+rsContext :: SpanAST.Context -> AST.Context
+rsContext (SpanAST.Context _ cs _ _) = map rsConstraint cs
+
+rsConstraint :: SpanAST.Constraint -> AST.Constraint
+rsConstraint (SpanAST.Constraint qi te) =
+  AST.Constraint (rsQualIdent qi) (rsTypeExpr te)
+
+rsInstanceType :: SpanAST.InstanceType -> AST.InstanceType
+rsInstanceType = rsTypeExpr
 
 -- |Remove span information from Equation
 rsEquation :: SpanAST.Equation -> AST.Equation
@@ -197,9 +220,7 @@ rsCondExpr (SpanAST.CondExpr e1 _ e2)
 rsLiteral :: SpanAST.Literal -> AST.Literal
 rsLiteral l = case l of
   SpanAST.Char   _ c -> AST.Char   c
-  -- The 'Ident'-argument used for supporting ad-hoc polymorphism
-  -- on integer numbers gets lost here
-  SpanAST.Int    _ i -> AST.Int    (AST.Ident virtualPos "_" 0) i
+  SpanAST.Int    _ i -> AST.Int    i
   SpanAST.Float  _ d -> AST.Float  d
   SpanAST.String _ s -> AST.String s
 
@@ -207,7 +228,7 @@ rsLiteral l = case l of
 rsPattern :: SpanAST.Pattern -> AST.Pattern
 rsPattern p = case p of
   SpanAST.LiteralPattern  l   -> AST.LiteralPattern (rsLiteral l)
-  SpanAST.NegativePattern i l -> AST.NegativePattern (rsIdent i) (rsLiteral l)
+  SpanAST.NegativePattern _ l -> AST.NegativePattern (rsLiteral l)
   SpanAST.VariablePattern i   -> AST.VariablePattern (rsIdent i)
   SpanAST.ConstructorPattern qi ps
     -> AST.ConstructorPattern (rsQualIdent qi) (map rsPattern ps)
@@ -254,8 +275,8 @@ rsExpression e = case e of
   SpanAST.Variable     qsi              -> AST.Variable (rsSymQualIdent qsi)
   SpanAST.Constructor  qsi              -> AST.Constructor (rsSymQualIdent qsi)
   SpanAST.Paren        _  e1  _         -> AST.Paren (rsExpression e1)
-  SpanAST.Typed        e1 _   te        -> AST.Typed (rsExpression e1)
-                                                    (rsTypeExpr te)
+  SpanAST.Typed        e1 _   qte       -> AST.Typed (rsExpression e1)
+                                                     (rsQualTypeExpr qte)
   SpanAST.Record       qi _   fes  _ _  -> AST.Record (rsQualIdent qi) (map rsFieldE fes)
   SpanAST.RecordUpdate e1 _   fes  _ _
     -> AST.RecordUpdate (rsExpression e1) (map rsFieldE fes)
@@ -270,8 +291,8 @@ rsExpression e = case e of
     -> AST.EnumFromTo (rsExpression e1) (rsExpression e2)
   SpanAST.EnumFromThenTo _  e1  _    e2 _ e3 _
     -> AST.EnumFromThenTo (rsExpression e1) (rsExpression e2) (rsExpression e3)
-  SpanAST.UnaryMinus     i  e1
-    -> AST.UnaryMinus (rsIdent i) (rsExpression e1)
+  SpanAST.UnaryMinus     _  e1
+    -> AST.UnaryMinus (rsExpression e1)
   SpanAST.Apply          e1 e2 -> AST.Apply (rsExpression e1) (rsExpression e2)
   SpanAST.InfixApply     e1 iop e2
     -> AST.InfixApply (rsExpression e1) (rsInfixOp iop) (rsExpression e2)

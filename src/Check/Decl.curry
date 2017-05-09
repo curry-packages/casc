@@ -24,7 +24,7 @@ import Utils             (condMsg)
 -- |Check Decl
 declCheck :: CheckF Decl
 declCheck d = case d of
-  DataDecl sd _ _ mse cds@(((ConstrDecl _ _ _):_)) sbs -> bars ++ constr ++ comp
+  DataDecl sd _ _ mse cds@(((ConstrDecl _ _ _ _ _ _ _):_)) sbs _ _ _ _ _ -> bars ++ constr ++ comp
     where
       pd   = start sd
       mpe  = case mse of

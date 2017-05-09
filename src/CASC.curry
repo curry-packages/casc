@@ -141,7 +141,7 @@ checkOneSourceFile (verb, col) progname dir srcfile = do
 
   -- Extend AST with positions
   wStatus verb "Extending abstract syntax tree... "
-  let posAST = fst $ apModule ast toks
+  let posAST = either error id $ fst $ apModule ast toks
 
   wDebug verb $ "Extended AST: " ++ show posAST
 

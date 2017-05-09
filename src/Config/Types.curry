@@ -29,6 +29,7 @@ data Check
   | CRhsBars
   | CRhsEq
   | CTypeArrow
+ deriving Eq
 
 -- |Convert string from config file into element of type Check
 cvCheck :: String -> Check

@@ -41,12 +41,14 @@ data Mode
   = ModeHelp    -- ^ Show help information and exit
   | ModeVersion -- ^ Show version and exit
   | ModeCheck   -- ^ Check files
+ deriving Eq
 
 -- |Verbosity level
 data Verbosity
   = VerbQuiet  -- ^ be quiet
   | VerbStatus -- ^ show status of check
   | VerbDebug  -- ^ show debug options
+ deriving Eq
 
 -- |All available options
 options :: [OptDescr (OptErr -> OptErr)]

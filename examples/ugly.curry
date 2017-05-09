@@ -199,7 +199,7 @@ all2 = let cc = coin+coin in
 first1 = getOneValue (coin+coin) >>= print
 
 -- Generate search tree of depth 0 (similar to getAllSolutions):
-tree0 = getSearchTree [] (=:=(x+y)) >>= print
+tree0 = getSearchTree ([]::[Int]) (=:=(x+y)) >>= print
         where
           x=coin
           y=coin

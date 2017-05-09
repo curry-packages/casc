@@ -47,11 +47,11 @@ checkExpSpec exps = case exps of
 -- |Check Decl
 checkDecl :: CheckF Decl
 checkDecl d = case d of
-  DataDecl     _   _   _   _  cds  _ -> [ m | m <- declCheck d ]
-                                        ++ concatMap checkConstrDecl cds
-  NewtypeDecl  _   _   _   _  ncd    -> checkNewConstrDecl ncd
+  DataDecl     _   _   _   _  cds _ _ _ _ _ _ ->
+    [ m | m <- declCheck d ] ++ concatMap checkConstrDecl cds
+  NewtypeDecl  _   _   _   _  ncd _ _ _ _ _   -> checkNewConstrDecl ncd
   TypeDecl     _   _   _   _  te     -> checkTypeExpr te
-  TypeSig      _   _   _   te        -> checkTypeExpr te
+  TypeSig      _   _   _   qte       -> checkQualTypeExpr qte
   FunctionDecl _   eqs               -> concatMap checkEquation eqs
   ForeignDecl  _   _   _   _  _  te  -> checkTypeExpr te
   PatternDecl  pat rhs               -> checkPattern pat ++ checkRhs rhs
@@ -60,16 +60,16 @@ checkDecl d = case d of
 -- |Check ConstrDecl
 checkConstrDecl :: CheckF ConstrDecl
 checkConstrDecl cd = case cd of
-  ConstrDecl _ _   tes         -> concatMap checkTypeExpr tes
-  ConOpDecl  _ te1 _   te2     -> checkTypeExpr te1 ++ checkTypeExpr te2
-  RecordDecl _ _   _   fds _ _ -> [ m | m <- constrDeclCheck cd ]
-                                  ++ concatMap checkFieldDecl fds
+  ConstrDecl _ _ _ _ _ _   tes         -> concatMap checkTypeExpr tes
+  ConOpDecl  _ _ _ _ _ te1 _   te2     -> checkTypeExpr te1 ++ checkTypeExpr te2
+  RecordDecl _ _ _ _ _ _   _   fds _ _ -> [ m | m <- constrDeclCheck cd ]
+                                          ++ concatMap checkFieldDecl fds
 
 -- |Check NewConstrDecl
 checkNewConstrDecl :: CheckF NewConstrDecl
 checkNewConstrDecl ncd = case ncd of
-  NewConstrDecl _ _ te              -> checkTypeExpr te
-  NewRecordDecl _ _ _  (_, _, te) _ -> checkTypeExpr te
+  NewConstrDecl _ te              -> checkTypeExpr te
+  NewRecordDecl _ _  (_, _, te) _ -> checkTypeExpr te
 
 -- |Check FieldDecl
 checkFieldDecl :: CheckF FieldDecl
@@ -78,6 +78,10 @@ checkFieldDecl (FieldDecl _ _ _ te) = checkTypeExpr te
 -- |Check TypeExpr
 checkTypeExpr :: CheckF TypeExpr
 checkTypeExpr te = [ m | te' <- subTypeExprs te, m <- typeExprCheck te']
+
+-- |Check QualTypeExpr
+checkQualTypeExpr :: CheckF QualTypeExpr
+checkQualTypeExpr (QualTypeExpr _ _ te) = checkTypeExpr te
 
 -- |Check Equation
 checkEquation :: CheckF Equation
@@ -140,7 +144,8 @@ checkAlt (Alt pat rhs) = checkPattern pat ++ checkRhs rhs
 -- |Sub-TypeExprs
 subTypeExprs :: TypeExpr -> [TypeExpr]
 subTypeExprs te = te : case te of
-  ConstructorType _   _   tes _ -> concatMap subTypeExprs tes
+  ConstructorType _             -> []
+  ApplyType       te1 te2       -> concatMap subTypeExprs [te1, te2]
   VariableType    _             -> []
   TupleType       _   tes _   _ -> concatMap subTypeExprs tes
   ListType        _   te1 _     -> subTypeExprs te1

@@ -63,8 +63,8 @@ lePos d1 d2 = (line $ declPos d1) <= (line $ declPos d2)
 -- |because it refers to the simple AST, not the extended PosAST.
 declPos :: Decl -> Pos
 declPos (InfixDecl    p _ _ _  ) = p
-declPos (DataDecl     p _ _ _  ) = p
-declPos (NewtypeDecl  p _ _ _  ) = p
+declPos (DataDecl     p _ _ _ _) = p
+declPos (NewtypeDecl  p _ _ _ _) = p
 declPos (TypeDecl     p _ _ _  ) = p
 declPos (TypeSig      p _ _    ) = p
 declPos (FunctionDecl p _ _    ) = p
@@ -72,3 +72,6 @@ declPos (ForeignDecl  p _ _ _ _) = p
 declPos (ExternalDecl p _      ) = p
 declPos (PatternDecl  p _ _    ) = p
 declPos (FreeDecl     p _      ) = p
+declPos (DefaultDecl  p _      ) = p
+declPos (ClassDecl    p _ _ _ _) = p
+declPos (InstanceDecl p _ _ _ _) = p

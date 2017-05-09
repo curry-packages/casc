@@ -7,6 +7,7 @@
 module Utils where
 
 import AnsiCodes    (red, yellow)
+import Distribution (installDir)
 import FilePath
 import List         (init, last)
 import Opts         (Verbosity (..))
@@ -42,7 +43,7 @@ frth4 (_, _, _, d) = d
 -- -----------------------------------------------------------------------------
 
 -- |Print status
-status :: String -> a -> IO ()
+status :: Show a => String -> a -> IO ()
 status str x = putStrLn ("\n" ++ str) >> putStrLn ("\n" ++ show x)
 
 -- |PutStrLn for a list of strings

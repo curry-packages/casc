@@ -19,13 +19,18 @@ import AST.Token
 type SpanTokens = [(Span, Token)]
 
 -- |*A*dd *P*osition *M*onad
-type ASM a = SpanTokens -> (a, SpanTokens)
+type ASM a = SpanTokens -> (Either String a, SpanTokens)
 
 returnP :: a -> ASM a
-returnP x ts = (x, ts)
+returnP x ts = (Right x, ts)
+
+failP :: String -> ASM a
+failP s ts = (Left s, ts)
 
 (>+=) :: ASM a -> (a -> ASM b) -> ASM b
-m >+= f = \ts -> let (a, ts') = m ts in f a ts'
+m >+= f = \ts -> case m ts of
+                   (Left s, ts')  -> (Left s, ts')
+                   (Right a, ts') -> f a ts'
 
 (>+) :: ASM a -> ASM b -> ASM b
 m >+ m' = m >+= \ _ -> m'
@@ -49,19 +54,19 @@ mapM f (x:xs) = f x       >+= \ y  ->
 
 -- |Read the next position without changing the state
 readSpan :: ASM Span
-readSpan ts@((p, _) : _) = (p, ts)
-readSpan [] = error "Token stream is empty."
+readSpan ts@((p, _) : _) = returnP p ts
+readSpan [] = failP "Token stream is empty." []
 
 -- |Read the next token without changing the state
 readToken :: ASM Token
-readToken ts@((_, t) : _) = (t, ts)
-readToken [] = error "Token stream is empty."
+readToken ts@((_, t) : _) = returnP t ts
+readToken [] = failP "Token stream is empty." []
 
 -- |Ensure a predicate. If predicate is `False`, fail.
-ensure :: Bool -> a -> ASM a
+ensure :: Show a => Bool -> a -> ASM a
 ensure b x = if b
                then returnP x
-               else error $ "Function `ensure` failed (AST.ASM). "
+               else failP $ "Function `ensure` failed (AST.ASM). "
                          ++ "This should have been returned: " ++ show x
 
 -- |Return position of token t
@@ -70,17 +75,17 @@ tokenSpan t = getTokenSpan >+= \(p, t') -> ensure (t == t') p
 
 -- |Get the next position, removing it from the state
 getTokenSpan :: ASM (Span, Token)
-getTokenSpan (t : ts) = (t, ts)
-getTokenSpan [] = error "Token stream is empty."
+getTokenSpan (t : ts) = returnP t ts
+getTokenSpan [] = failP "Token stream is empty." []
 
 -- |Get position of the next token which can be one of two possible alternatives
 tokenSpanOneOf :: Token -> Token -> ASM Span
 tokenSpanOneOf t1 t2 ((p,t') : ts)
-  | t1 == t'  = (p, ts)
-  | t2 == t'  = (p, ts)
-  | otherwise = error $ "expexted " ++ show t1 ++ " or "
-                     ++ show t2 ++ ", got " ++ show t'
-tokenSpanOneOf _ _ []  = error "Token stream is empty."
+  | t1 == t'  = returnP p ts
+  | t2 == t'  = returnP p ts
+  | otherwise = failP ("expected " ++ show t1 ++ " or "
+                     ++ show t2 ++ ", got " ++ show t') ts
+tokenSpanOneOf _ _ []  = failP "Token stream is empty." []
 
 -- |Parse a chain of expressions, separated by a Token, e.g. a list: [1,2,3]
 --  Process the expressions further with a function f, e.g. apLit
@@ -121,17 +126,17 @@ optional f (Just x) = Just <$> f x
 -- |Get position of next token which is optional and one of two alternatives
 maybeOneOf :: Token -> Token -> ASM (Maybe Span)
 maybeOneOf t1 t2 ts@((p,t) : ts')
-  | t1 == t   = (Just p, ts')
-  | t2 == t   = (Just p, ts')
-  | otherwise = (Nothing, ts)
-maybeOneOf _ _ []  = error "Token stream is empty."
+  | t1 == t   = returnP (Just p) ts'
+  | t2 == t   = returnP (Just p) ts'
+  | otherwise = returnP Nothing ts
+maybeOneOf _ _ []  = failP "Token stream is empty." []
 
 -- |Return `Just` position of optional token or `Nothing`
 maybeTokenSpan :: Token -> ASM (Maybe Span)
 maybeTokenSpan t ts@((p,t') : ts')
-  | t == t'   = (Just p , ts')
-  | otherwise = (Nothing, ts )
-maybeTokenSpan _ []  = error "Token stream is empty."
+  | t == t'   = returnP (Just p) ts'
+  | otherwise = returnP Nothing ts
+maybeTokenSpan _ []  = failP "Token stream is empty." []
 
 -- |Parse an expression that might be surrounded
 -- |by any kind of opening and closing symbols
@@ -146,3 +151,10 @@ maybeEnclosedBy ((o, c):ocs) f =
 -- |Parse an expression that might be surrounded by parens
 maybeParens :: ASM a -> ASM ((Maybe Span), a, (Maybe Span))
 maybeParens f = maybeEnclosedBy [(LeftParen, RightParen)] f
+
+-- |Parse an expression non-deterministically. If the first parser fails, the
+--  second is invoked. Otherwise the result of the first one is returned.
+choose :: ASM a -> ASM a -> ASM a
+choose f g = \ts -> case f ts of
+                      (Left _, _) -> g ts
+                      res         -> res

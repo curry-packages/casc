@@ -41,7 +41,10 @@ data Token
 
   -- reserved keywords
   | KW_case
+  | KW_class
   | KW_data
+  | KW_default
+  | KW_deriving
   | KW_do
   | KW_else
   | KW_external
@@ -54,6 +57,7 @@ data Token
   | KW_infix
   | KW_infixl
   | KW_infixr
+  | KW_instance
   | KW_let
   | KW_module
   | KW_newtype
@@ -73,8 +77,7 @@ data Token
   | LeftArrow            -- <-
   | RightArrow           -- ->
   | Tilde                -- ~
-  | Bind                 -- :=
-  | Select               -- :>
+  | DoubleArrow          -- =>
 
   -- special identifiers
   | Id_as
@@ -88,12 +91,16 @@ data Token
   -- special operators
   | SymDot               -- .
   | SymMinus             -- -
-  | SymMinusDot          -- -.
+
+  -- special symbols
+  | SymStar              -- *
 
   -- pragmas
   | PragmaLanguage                      -- {-# LANGUAGE
   | PragmaOptions (Maybe String) String -- {-# OPTIONS
   | PragmaHiding                        -- {-# HIDING
+  | PragmaMethod                        -- {-# METHOD
+  | PragmaModule                        -- {-# MODULE
   | PragmaEnd                           -- #-}
 
   -- comments
@@ -102,3 +109,4 @@ data Token
 
   -- end-of-file token
   | EOF
+ deriving (Eq, Show)

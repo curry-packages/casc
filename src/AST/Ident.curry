@@ -8,26 +8,31 @@ data Ident = Ident
   , idName   :: String   -- ^ Name of the identifier
   , idUnique :: Int      -- ^ Unique number of the identifier
   }
+ deriving Show
 
 -- |Qualified identifier
 data QualIdent = QualIdent
   { qidModule :: Maybe ModuleIdent -- ^ optional module identifier
   , qidIdent  :: Ident             -- ^ identifier itself
   }
+ deriving Show
 
 -- | Module identifier
 data ModuleIdent = ModuleIdent
   { midSpan       :: Span     -- ^ source code 'Span'
   , midQualifiers :: [String] -- ^ hierarchical idenfiers
   }
+ deriving Show
 
 -- |QualIdent that might have some kind of surrounding symbols,
 -- |e.g. parens or backticks
 -- 1. (Maybe Span) -  opening symbol like LeftParen or Backtick
 -- 2. (Maybe Span) -  closing symbol like RightParen or Backtick
 data SymIdent = SymIdent (Maybe Span) Ident (Maybe Span)
+ deriving Show
 
 data SymQualIdent = SymQualIdent (Maybe Span) QualIdent (Maybe Span)
+ deriving Show
 
 -- |Global scope for renaming
 globalScope :: Int
