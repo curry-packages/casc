@@ -7,7 +7,6 @@
 module CASC (main) where
 
 import AnsiCodes    (blue, green, red, yellow)
-import Char         (toUpper)
 import Directory    (doesDirectoryExist, getDirectoryContents)
 import Distribution
 import FilePath
@@ -126,10 +125,8 @@ checkOneSourceFile :: CallOpts -> String -> String -> String -> IO ()
 checkOneSourceFile (verb, col) progname dir srcfile = do
 
   -- Invoke front end
-  params <- return $ setQuiet True
-                   $ addTarget TOKS
-                   $ setDefinitions defs defaultParams
-  callFrontendWithParams CY params progname
+  let options = addTarget TOKS (setQuiet True defaultParams)
+  callFrontendWithParams CY options progname
 
   -- Retrieve token stream
   let tokenFile = inCurrySubdir (dir </> takeFileName progname) <.> "tokens"
@@ -166,10 +163,6 @@ checkOneSourceFile (verb, col) progname dir srcfile = do
       shallCorr    = (autoCorr == "yes" || autoCorr == "y")
       corrActive   = corrNotEmpty && msgsNotEmpty && shallCorr
   when corrActive $ correctOne (progname <.> "curry") posAST verb
-
- where
-  defs = [( "__" ++ map toUpper curryCompiler ++ "__"
-          , curryCompilerMajorVersion * 100 + curryCompilerMinorVersion )]
 
 -- |Autocorrection for one file.
 -- |Overwrite .curry/file.cy with corrected AST.
