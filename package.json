@@ -6,6 +6,7 @@
     "synopsis": "A tool to check the formatting style of Curry programs",
     "category": [ "Analysis" ],
     "dependencies": {
+        "base"     : ">= 1.0.0, < 2.0.0",
         "wl-pprint": ">= 0.0.1"
     },
     "compilerCompatibility": {
