@@ -17,17 +17,16 @@ module Config.ReadConfig
   , shallCorrect
   ) where
 
-import Directory    (doesFileExist, getHomeDirectory)
-import FilePath     ((</>))
-import Global
-import List         (isInfixOf, isPrefixOf, isSuffixOf, last)
-import Read         (readInt)
-import ReadShowTerm (readQTerm)
-import Unsafe       (unsafePerformIO)
+import System.Directory (doesFileExist, getHomeDirectory)
+import System.FilePath  ((</>))
+import System.IO.Unsafe (unsafePerformIO)
+import Data.Global
+import Data.List       (isInfixOf, isPrefixOf, isSuffixOf, last)
+import ReadShowTerm    (readQTerm)
 
-import Utils        (fst4, snd4, thrd4, frth4)
-import Config.Types (Check (..), cvCheck, help, configName, defaultLgth
-                    ,defaultCfg, defaultAutoC)
+import Utils            (fst4, snd4, thrd4, frth4)
+import Config.Types     (Check (..), cvCheck, help, configName, defaultLgth
+                        ,defaultCfg, defaultAutoC)
 
 -- |'True' if check is marked with "to check" (1) or "to correct" (2).
 -- |'False' if check is marked with "don't check" (0).
@@ -107,7 +106,7 @@ readCfg (c:cs)
 readMaxLength :: [String] -> Int
 readMaxLength [] = defaultLgth
 readMaxLength (c:cs)
-  | isPrefixOf "maxLength" c = readInt $ last $ words c
+  | isPrefixOf "maxLength" c = read $ last $ words c
   | otherwise                = readMaxLength cs
 
 -- |Read parameter autoCorrect by taking last word of that line

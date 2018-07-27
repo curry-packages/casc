@@ -9,10 +9,10 @@
 -}
 module AST.AddSpans (apModule) where
 
-import Char  (toUpper)
-import List  (last)
-import Maybe (fromMaybe)
-import Prelude hiding (mapM) -- locally defined in AST.ASM
+import Data.Char  (toUpper)
+import Data.List  (last)
+import Data.Maybe (fromMaybe)
+import Prelude hiding ((<$>), (<$), mapM) -- locally defined in AST.ASM
 
 import           AST.ASM
 import           AST.AST                                    as AST

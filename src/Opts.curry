@@ -7,9 +7,9 @@
 -}
 module Opts where
 
-import GetOpt
-import List   (maximum, intercalate)
-import System (getArgs, getProgName)
+import System.Console.GetOpt
+import System.Environment    (getArgs, getProgName)
+import Data.List             (maximum, intercalate)
 
 
 -- |Retrieve the 'Options'

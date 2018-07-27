@@ -10,7 +10,7 @@
 -}
 module AST.RemoveSpans (rsModule) where
 
-import Char (toUpper)
+import Data.Char (toUpper)
 
 import           AST.AST     as AST
 import           AST.Ident   as I

@@ -1,6 +1,5 @@
 import AllSolutions
 import Combinatorial
-import Integer
 
 -- apply a function to all list elements (predefined as `map'):
 map_ ::  (a->b) -> [a] -> [b]

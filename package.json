@@ -1,13 +1,12 @@
 {
     "name": "casc",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "author": "Katharina Rahf, Michael Hanus <mh@informatik.uni-kiel.de>",
     "maintainer": "Michael Hanus <mh@informatik.uni-kiel.de>",
     "synopsis": "A tool to check the formatting style of Curry programs",
     "category": [ "Analysis" ],
     "dependencies": {
-        "base"     : ">= 1.0.0, < 2.0.0",
-        "wl-pprint": ">= 0.0.1"
+        "wl-pprint": ">= 2.0.0"
     },
     "compilerCompatibility": {
         "pakcs": ">= 2.0.0",

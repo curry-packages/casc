@@ -7,8 +7,8 @@
 -}
 module AST.AST where
 
-import Char (isAlphaNum)
-import List (intercalate)
+import Data.Char (isAlphaNum)
+import Data.List (intercalate)
 
 import AST.Span (Pos)
 

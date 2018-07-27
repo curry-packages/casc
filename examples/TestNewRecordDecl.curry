@@ -1,5 +1,5 @@
 module Test.TestNewRecordDecl where
 
-import List
+import Data.List
 
 newtype Boolean = Boolean { bool :: Bool }

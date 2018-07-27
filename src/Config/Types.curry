@@ -7,8 +7,8 @@
 -}
 module Config.Types where
 
-import List         (isInfixOf)
-import Text.Pretty  ((<+>), (<$$>), pPrint, text)
+import Data.List   (isInfixOf)
+import Text.Pretty ((<+>), (<$$>), pPrint, text)
 
 -- |All available checks
 data Check

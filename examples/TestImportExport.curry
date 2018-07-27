@@ -1,8 +1,8 @@
 module Test.TestImportExport ((+*)) where
 
-import GetOpt (ArgOrder (..), ArgDescr (NoArg, ReqArg))
-import List   ((\\), intercalate)
-import Maybe
+import System.Console.GetOpt (ArgOrder (..), ArgDescr (NoArg, ReqArg))
+import Data.List   ((\\), intercalate)
+import Data.Maybe
 
 
 (+*) x y = ( x + y ) + ( x * y)

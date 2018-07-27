@@ -6,26 +6,27 @@
 -}
 module CASC (main) where
 
-import AnsiCodes    (blue, green, red, yellow)
-import Directory    (doesDirectoryExist, getDirectoryContents)
+import System.Console.ANSI.Codes (blue, green, red, yellow)
+import System.Directory          (doesDirectoryExist, getDirectoryContents)
+import System.Process            (exitWith, system)
+import System.Environment        (getProgName)
+import System.FilePath
+import System.IO                 (hPutStrLn, hIsTerminalDevice, stdout, stderr)
+import Data.List                 ((\\), intercalate, last, isSuffixOf)
+import Data.Maybe                (isJust)
+import ReadShowTerm              (readUnqualifiedTerm, readQTermFile)
 import Distribution
-import FilePath
-import IO           (hPutStrLn, hIsTerminalDevice, stdout, stderr)
-import List         ((\\), intercalate, last, isSuffixOf)
-import Maybe        (isJust)
-import ReadShowTerm (readUnqualifiedTerm, readQTermFile)
-import System       (exitWith, getProgName, system)
 
-import AST.AddSpans            (apModule)
-import AST.SpanAST             (Module)
-import AST.SortSplit           (sortSplitModule)
-import AutoCorr.AutoCorrPosAST (correctModule)
-import Check.CheckPosAST       (checkModule)
-import Check.LineLength        (checkLine)
+import AST.AddSpans              (apModule)
+import AST.SpanAST               (Module)
+import AST.SortSplit             (sortSplitModule)
+import AutoCorr.AutoCorrPosAST   (correctModule)
+import Check.CheckPosAST         (checkModule)
+import Check.LineLength          (checkLine)
 import Config.ReadConfig
-import Config.Types            (Check (CLineLength))
+import Config.Types              (Check (CLineLength))
 import Opts
-import AST.RemoveSpans         (rsModule)
+import AST.RemoveSpans           (rsModule)
 import Utils
 
 

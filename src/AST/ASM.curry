@@ -7,6 +7,8 @@
 -}
 module AST.ASM where
 
+import Prelude hiding ((<$>), (<$))
+
 import AST.AST
 import AST.Span  (Span)
 import AST.Token

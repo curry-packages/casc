@@ -6,17 +6,17 @@
 -}
 module Utils where
 
-import AnsiCodes    (red, yellow)
-import Distribution (installDir)
-import FilePath
-import List         (init, last)
-import Opts         (Verbosity (..))
-import Sort         (quickSortBy)
+import System.Console.ANSI.Codes (red, yellow)
+import System.FilePath
+import Data.List                 (init, last)
+import Sort                      (quickSortBy)
+import Distribution              (installDir)
 
-import AST.Span          (Span, showPos)
+import AST.Span                  (Span, showPos)
 import AST.Token
-import AST.PositionUtils (line, col)
-import Check.Types       (Message (..), CheckF)
+import AST.PositionUtils         (line, col)
+import Check.Types               (Message (..), CheckF)
+import Opts                      (Verbosity (..))
 
 -- -----------------------------------------------------------------------------
 -- General auxiliary functions
