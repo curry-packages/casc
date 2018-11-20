@@ -6,28 +6,31 @@
 -}
 module CASC (main) where
 
-import AnsiCodes    (blue, green, red, yellow)
-import Directory    (doesDirectoryExist, getDirectoryContents)
-import Distribution
+import AnsiCodes    ( blue, green, red, yellow )
+import Directory    ( doesDirectoryExist, getDirectoryContents )
+import Distribution ( lookupModuleSourceInLoadPath, stripCurrySuffix
+                    , inCurrySubdir )
 import FilePath
-import IO           (hPutStrLn, hIsTerminalDevice, stdout, stderr)
-import List         ((\\), intercalate, last, isSuffixOf)
-import Maybe        (isJust)
-import ReadShowTerm (readUnqualifiedTerm, readQTermFile)
-import System       (exitWith, getProgName, system)
+import IO           ( hPutStrLn, hIsTerminalDevice, stdout, stderr )
+import List         ( (\\), intercalate, last, isSuffixOf )
+import Maybe        ( isJust )
+import ReadShowTerm ( readUnqualifiedTerm, readQTermFile )
+import System       ( exitWith, getProgName, system )
 
-import AST.AddSpans            (apModule)
-import AST.SpanAST             (Module)
-import AST.SortSplit           (sortSplitModule)
-import AutoCorr.AutoCorrPosAST (correctModule)
-import Check.CheckPosAST       (checkModule)
-import Check.LineLength        (checkLine)
+import AST.AddSpans            ( apModule )
+import AST.SpanAST             ( Module )
+import AST.SortSplit           ( sortSplitModule )
+import AutoCorr.AutoCorrPosAST ( correctModule )
+import Check.CheckPosAST       ( checkModule )
+import Check.LineLength        ( checkLine )
 import Config.ReadConfig
-import Config.Types            (Check (CLineLength))
+import Config.Types            ( Check (CLineLength) )
 import Opts
-import AST.RemoveSpans         (rsModule)
+import AST.RemoveSpans         ( rsModule )
 import Utils
 
+import System.FrontendExec ( FrontendTarget(..), callFrontendWithParams
+                           , defaultParams, setQuiet, addTarget )
 
 -- |Get options from command line and pass them to main function `casc`
 main :: IO ()
