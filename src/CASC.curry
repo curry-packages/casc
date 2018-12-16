@@ -4,18 +4,21 @@
 
     Command line tool for checking programming style of Curry files.
 -}
-module CASC (main) where
+module CASC ( main ) where
 
 import AnsiCodes    ( blue, green, red, yellow )
 import Directory    ( doesDirectoryExist, getDirectoryContents )
-import Distribution ( lookupModuleSourceInLoadPath, stripCurrySuffix
-                    , inCurrySubdir )
 import FilePath
 import IO           ( hPutStrLn, hIsTerminalDevice, stdout, stderr )
 import List         ( (\\), intercalate, last, isSuffixOf )
 import Maybe        ( isJust )
 import ReadShowTerm ( readUnqualifiedTerm, readQTermFile )
 import System       ( exitWith, getProgName, system )
+
+import System.CurryPath    ( lookupModuleSourceInLoadPath, stripCurrySuffix
+                           , inCurrySubdir )
+import System.FrontendExec ( FrontendTarget(..), callFrontendWithParams
+                           , defaultParams, setQuiet, addTarget )
 
 import AST.AddSpans            ( apModule )
 import AST.SpanAST             ( Module )
@@ -28,9 +31,6 @@ import Config.Types            ( Check (CLineLength) )
 import Opts
 import AST.RemoveSpans         ( rsModule )
 import Utils
-
-import System.FrontendExec ( FrontendTarget(..), callFrontendWithParams
-                           , defaultParams, setQuiet, addTarget )
 
 -- |Get options from command line and pass them to main function `casc`
 main :: IO ()
