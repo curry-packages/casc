@@ -6,12 +6,13 @@
 -}
 module Utils where
 
-import AnsiCodes    (red, yellow)
 import Distribution (installDir)
 import FilePath
 import List         (init, last)
 import Opts         (Verbosity (..))
 import Sort         (quickSortBy)
+
+import System.Console.ANSI.Codes (red, yellow)
 
 import AST.Span          (Span, showPos)
 import AST.Token

@@ -6,7 +6,6 @@
 -}
 module CASC ( main ) where
 
-import AnsiCodes    ( blue, green, red, yellow )
 import Directory    ( doesDirectoryExist, getDirectoryContents )
 import FilePath
 import IO           ( hPutStrLn, hIsTerminalDevice, stdout, stderr )
@@ -15,6 +14,7 @@ import Maybe        ( isJust )
 import ReadShowTerm ( readUnqualifiedTerm, readQTermFile )
 import System       ( exitWith, getProgName, system )
 
+import System.Console.ANSI.Codes ( blue, green, red, yellow )
 import System.CurryPath    ( lookupModuleSourceInLoadPath, stripCurrySuffix
                            , inCurrySubdir )
 import System.FrontendExec ( FrontendTarget(..), callFrontendWithParams
