@@ -1,6 +1,7 @@
-import AllSolutions
 import Combinatorial
 import Integer
+
+import Control.AllSolutions
 
 -- apply a function to all list elements (predefined as `map'):
 map_ ::  (a->b) -> [a] -> [b]

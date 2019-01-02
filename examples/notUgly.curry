@@ -1,6 +1,7 @@
-import AllSolutions  (getAllFailures, getAllSolutions
-                     , getOneValue, getSearchTree)
-import Combinatorial (permute)
+import Combinatorial         (permute)
+
+import Control.AllSolutions  (getAllFailures, getAllSolutions
+                             , getOneValue, getSearchTree)
 
 -- apply a function to all list elements (predefined as `map'):
 map_ ::  (a -> b) -> [a] -> [b]
