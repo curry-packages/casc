@@ -21,7 +21,7 @@
         "main": "CASC"
     },
     "source": {
-        "git": "https://git.ps.informatik.uni-kiel.de/curry-packages/casc.git",
+        "git": "https://github.com/curry-packages/casc.git",
         "tag": "$version"
     }
 }
